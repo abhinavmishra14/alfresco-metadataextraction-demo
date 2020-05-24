@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+   
+    <bean id="extracter.TikaAuto" class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter" parent="baseMetadataExtracter">
+		<constructor-arg>
+			<ref bean="tikaConfig" />
+		</constructor-arg>
+		<property name="overwritePolicy">
+			<value>EAGER</value>
+		</property>
+		<property name="mappingProperties">
+			<bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+				<property name="location">
+					<value>classpath:alfresco/module/${project.artifactId}/metadataextraction/TikaAutoMetadataExtracter.properties</value>
+				</property>
+			</bean>
+		</property>
+		<property name="inheritDefaultMapping">
+	      <value>false</value>
+	    </property>
+	</bean>
+	
+	<bean id="extracter.PDFBox" class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter" parent="baseMetadataExtracter">
+		<property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
+		<property name="overwritePolicy">
+			<value>EAGER</value>
+		</property>
+		<!-- Including custom properties -->
+		<property name="mappingProperties">
+			<bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+				<property name="location">
+					<value>classpath:alfresco/module/${project.artifactId}/metadataextraction/PdfBoxMetadataExtracter.properties</value>
+				</property>
+			</bean>
+		</property>
+		<property name="inheritDefaultMapping">
+	      <value>false</value>
+	    </property>
+	</bean>
+	
+	<bean id="extracter.Poi" class="org.alfresco.repo.content.metadata.PoiMetadataExtracter" parent="baseMetadataExtracter">
+		<property name="overwritePolicy">
+			<value>EAGER</value>
+		</property>
+		<!-- Including custom properties -->
+		<property name="mappingProperties">
+			<bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+				<property name="location">
+					<value>classpath:alfresco/module/${project.artifactId}/metadataextraction/PoiMetadataExtracter.properties</value>
+				</property>
+			</bean>
+		</property>
+		<property name="inheritDefaultMapping">
+	      <value>false</value>
+	    </property>
+	</bean>
+</beans>

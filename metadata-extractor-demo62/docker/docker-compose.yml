@@ -1,0 +1,144 @@
+version: '3.4'
+services:
+  metadata-extractor-demo62-share:
+    image: alfresco-share-metadata-extractor-demo62:development
+    build:
+      dockerfile: ./Dockerfile
+      context: ../../../metadata-extractor-demo62-share-docker/target
+    environment:
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8888"
+      REPO_HOST: metadata-extractor-demo62-acs
+      REPO_PORT: 8080
+    ports:
+      - "${share.port}:8080"
+      - "${share.debug.port}:8888"
+      
+  metadata-extractor-demo62-acs:
+    image: alfresco-content-services-metadata-extractor-demo62:development
+    build:
+      dockerfile: ./Dockerfile
+      context: ../../../metadata-extractor-demo62-platform-docker/target
+    environment:
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8888"
+      JAVA_OPTS: "
+                -Ddb.driver=org.postgresql.Driver
+                -Ddb.username=alfresco
+                -Ddb.password=alfresco
+                -Ddb.pool.initial=10
+                -Ddb.pool.max=100
+                -Ddb.driver=org.postgresql.Driver
+                -Ddb.url=jdbc:postgresql://metadata-extractor-demo62-postgres:5432/alfresco
+                -Dsolr.host=metadata-extractor-demo62-ass
+                -Dsolr.port=8983
+                -Dsolr.secureComms=none
+                -Dsolr.base.url=/solr
+                -Dindex.subsystem.name=solr6
+                -Dshare.context=share
+                -Dshare.host=localhost
+                -Dshare.port=8180
+                -Dshare.protocol=http
+                -Dalfresco.context=alfresco
+                -Dalfresco.host=localhost
+                -Dalfresco.port=8080
+                -Dalfresco.protocol=http
+                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
+                -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
+                -Ddeployment.method=DOCKER_COMPOSE
+                -Dlocal.transform.service.enabled=true
+                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
+                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
+                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
+                -DlocalTransform.tika.url=http://tika:8090/
+                -DlocalTransform.misc.url=http://transform-misc:8090/
+                -Dlegacy.transform.service.enabled=true
+                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
+                -Djodconverter.url=http://libreoffice:8090/
+                -Dimg.url=http://imagemagick:8090/
+                -Dtika.url=http://tika:8090/
+                -Dtransform.misc.url=http://transform-misc:8090/
+                -Dcsrf.filter.enabled=false
+                -Xms1500m -Xmx1500m
+                "
+    ports:
+      - "${acs.port}:8080"
+      - "${acs.debug.port}:8888"
+    volumes:
+      - metadata-extractor-demo62-acs-volume:/usr/local/tomcat/alf_data
+    depends_on:
+      - metadata-extractor-demo62-postgres
+      
+  alfresco-pdf-renderer:
+        image: alfresco/alfresco-pdf-renderer:2.1.0
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8090:8090
+
+  imagemagick:
+        image: alfresco/alfresco-imagemagick:2.1.0
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8091:8090
+
+  libreoffice:
+        image: alfresco/alfresco-libreoffice:2.1.0
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8092:8090
+
+  tika:
+        image: alfresco/alfresco-tika:2.1.0
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8093:8090
+
+  transform-misc:
+        image: alfresco/alfresco-transform-misc:2.1.0
+        environment:
+            JAVA_OPTS: " -Xms256m -Xmx512m"
+        ports:
+            - 8094:8090
+  
+  activemq:
+        image: alfresco/alfresco-activemq:5.15.8
+        ports:
+            - 8161:8161 # Web Console
+            - 5672:5672 # AMQP
+            - 61616:61616 # OpenWire
+            - 61613:61613 # STOMP
+            
+  metadata-extractor-demo62-postgres:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: alfresco
+      POSTGRES_USER: alfresco
+      POSTGRES_PASSWORD: alfresco
+    command: postgres -c max_connections=300 -c log_min_messages=LOG
+    ports:
+      - "${postgres.port}:5432"
+    volumes:
+      - metadata-extractor-demo62-db-volume:/var/lib/postgresql/data
+      
+  metadata-extractor-demo62-ass:
+    image: alfresco/alfresco-search-services:1.2.0
+    environment:
+      SOLR_ALFRESCO_HOST: metadata-extractor-demo62-acs
+      SOLR_ALFRESCO_PORT: 8080
+      SOLR_SOLR_HOST: metadata-extractor-demo62-ass
+      SOLR_SOLR_PORT: 8983
+      SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
+    ports:
+      - "8983:8983"
+    volumes:
+      - metadata-extractor-demo62-ass-volume:/opt/alfresco-search-services/contentstore
+      - metadata-extractor-demo62-ass-volume:/opt/alfresco-search-services/data
+volumes:
+  metadata-extractor-demo62-acs-volume:
+    external: true
+  metadata-extractor-demo62-db-volume:
+    external: true
+  metadata-extractor-demo62-ass-volume:
+    external: true

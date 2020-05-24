@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="demo:model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+	<description>This model is an example of custom content model</description>
+	<author>Abhinav</author>
+	<version>1.0</version>
+
+	<imports>
+		<import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+   	    <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+		<import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+	</imports>
+
+	<namespaces>
+		<namespace uri="http://www.github.com/abhinavmishra14/model/demo/1.0" prefix="demo" />
+	</namespaces>
+
+	<aspects>
+		<aspect name="demo:testAuditMetadata">
+			<title>Test Audit Metadata</title>
+			<description>Test Audit Metadata</description>
+			<properties>
+		        <property name="demo:originCreatedDate">
+			        <title>Original Created Date</title>
+			        <description>Created date of files based on incoming metadata extracted from metadata extractor</description>
+			        <type>d:text</type>
+			    </property>	
+			    <property name="demo:originModifiedDate">
+			        <title>Original Modified Date</title>
+			        <description>Modified date of files based on incoming metadata extracted from metadata extractor</description>
+			        <type>d:text</type>
+			    </property>	
+			</properties>
+		</aspect>
+	</aspects>
+</model>	
